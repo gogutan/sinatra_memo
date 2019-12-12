@@ -1,0 +1,10 @@
+<div class="field">
+<pre><%= @all_lines %></pre>
+</div>
+<div class="buttons is-centered">
+  <a href="./<%= @id %>/edit" class="button is-outlined is-primary">変更</a>
+  <form action="" method="POST">
+    <input type="hidden" name="_method" value="DELETE">
+    <input type="submit" class="button is-danger" value="削除">
+  </form>
+</div>

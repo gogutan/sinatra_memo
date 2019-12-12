@@ -1,0 +1,6 @@
+<a href="./memos/new" class="button">追加</a>
+<ul class="has-text-weight-bold">
+<% @contents.each do |first_line, file_id| %>
+  <li><a href="./memos/<%= file_id %>"><%= first_line %></a></li>
+<% end %>
+</ul>

@@ -1,0 +1,9 @@
+<form action="/memos/<%= @id %>" method="POST">
+  <input type="hidden" name="_method" value="PATCH">
+  <div class="field">
+    <textarea class="textarea" name="memo"><%= @all_lines %></textarea>
+  </div>
+  <div class="buttons is-centered">
+    <input type="submit" class="button" value="変更">
+  </div>
+</form>
