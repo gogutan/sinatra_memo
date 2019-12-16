@@ -22,10 +22,6 @@ class Memo
     @connection.exec("INSERT INTO #{MEMO_TABLE}(memo_id, memo_content, updated_at) VALUES ($1, $2, $3)", [@memo_id, content, Time.now])
   end
 
-  def mtime
-    @connection.exec("SELECT * FROM #{MEMO_TABLE} WHERE memo_id = $1", [@memo_id])[0]["updated_at"]
-  end
-
   def exist?
     @connection.exec("SELECT EXISTS (SELECT * FROM #{MEMO_TABLE} WHERE memo_id = $1)", [@memo_id])[0]["exists"] == "t" ? true : false
   end
