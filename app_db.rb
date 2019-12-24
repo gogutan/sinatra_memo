@@ -3,14 +3,13 @@
 require "sinatra"
 require "sinatra/reloader"
 require "pg"
-use Rack::MethodOverride
 
 class Memo
   MEMO_TABLE = "memo"
   BACKUP_TABLE = "memo_backup"
 
-  def initialize(id)
-    @connection = PG.connect(host: "localhost", user: "postgres", password: "", dbname: "memodb", port: "5432")
+  def initialize(connection, id)
+    @connection = connection
     @memo_id = id
   end
 
@@ -55,8 +54,8 @@ class Memo
 end
 
 class MemoList
-  def initialize
-    @connection = PG.connect(host: "localhost", user: "postgres", password: "", dbname: "memodb", port: "5432")
+  def initialize(connection)
+    @connection = connection
     @memos = @connection.exec("SELECT * FROM #{Memo::MEMO_TABLE}").to_a
   end
 
@@ -73,8 +72,12 @@ class MemoList
   end
 end
 
+def connection
+  PG.connect(host: "localhost", user: "postgres", password: "", dbname: "memodb", port: "5432")
+end
+
 get "/memos" do
-  ml = MemoList.new
+  ml = MemoList.new(connection)
   ml.sort!
   @contents = ml.first_lines.zip(ml.memo_ids)
   erb :"memos/index"
@@ -86,7 +89,7 @@ post "/memos" do
     @all_lines = "\r\n" + params[:memo]
     erb :"memos/new"
   else
-    memo = Memo.new(SecureRandom.uuid)
+    memo = Memo.new(connection, SecureRandom.uuid)
     memo.save(params[:memo])
     redirect "/memos"
   end
@@ -98,7 +101,7 @@ end
 
 get "/memos/:id/edit" do |id|
   @id = id
-  memo = Memo.new(id)
+  memo = Memo.new(connection, id)
   if memo.exist?
     @all_lines = "\r\n" + memo.all_lines
     erb :"memos/edit"
@@ -109,7 +112,7 @@ end
 
 get "/memos/:id" do |id|
   @id = id
-  memo = Memo.new(id)
+  memo = Memo.new(connection, id)
   if memo.exist?
     @all_lines = "\r\n" + memo.all_lines
     erb :"memos/show"
@@ -119,13 +122,13 @@ get "/memos/:id" do |id|
 end
 
 delete "/memos/:id" do |id|
-  memo = Memo.new(id)
+  memo = Memo.new(connection, id)
   memo.delete
   redirect "/memos"
 end
 
 patch "/memos/:id" do |id|
-  memo = Memo.new(id)
+  memo = Memo.new(connection, id)
   if params[:memo].match?(/\A\R|\A\z/)
     @caution = "1行目が空のメモは保存できません。"
     if memo.exist?
